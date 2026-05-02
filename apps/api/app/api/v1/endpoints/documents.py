@@ -103,6 +103,7 @@ async def get_document(
 
 # ── Internal helpers ──────────────────────────────────────────────────────────
 
+
 def _extract_text(raw_bytes: bytes, content_type: str) -> str:
     """Extract plain text from a document blob."""
     if content_type == "application/pdf":
@@ -111,9 +112,7 @@ def _extract_text(raw_bytes: bytes, content_type: str) -> str:
             from pypdf import PdfReader  # type: ignore
 
             reader = PdfReader(io.BytesIO(raw_bytes))
-            return "\n".join(
-                page.extract_text() or "" for page in reader.pages
-            )
+            return "\n".join(page.extract_text() or "" for page in reader.pages)
         except Exception as exc:
             logger.warning("pdf_extract_failed", error=str(exc))
             return raw_bytes.decode("utf-8", errors="ignore")
@@ -139,15 +138,18 @@ def _extract_text(raw_bytes: bytes, content_type: str) -> str:
 _analyzer = None
 _anonymizer = None
 
+
 def _get_presidio():
     global _analyzer, _anonymizer
     if _analyzer is None:
         from presidio_analyzer import AnalyzerEngine
         from presidio_anonymizer import AnonymizerEngine
+
         logger.info("presidio.init", msg="Loading spaCy models for Presidio...")
         _analyzer = AnalyzerEngine()
         _anonymizer = AnonymizerEngine()
     return _analyzer, _anonymizer
+
 
 def _redact_pii(text: str) -> str:
     """
@@ -156,14 +158,21 @@ def _redact_pii(text: str) -> str:
     """
     try:
         analyzer, anonymizer = _get_presidio()
-        
+
         # Analyze the text for specific PII entities
         results = analyzer.analyze(
-            text=text, 
-            entities=["PERSON", "LOCATION", "PHONE_NUMBER", "EMAIL_ADDRESS", "CREDIT_CARD", "US_SSN"],
-            language="en"
+            text=text,
+            entities=[
+                "PERSON",
+                "LOCATION",
+                "PHONE_NUMBER",
+                "EMAIL_ADDRESS",
+                "CREDIT_CARD",
+                "US_SSN",
+            ],
+            language="en",
         )
-        
+
         # Anonymize (replaces text with entity type, e.g., <PERSON>)
         anonymized_result = anonymizer.anonymize(text=text, analyzer_results=results)
         return anonymized_result.text

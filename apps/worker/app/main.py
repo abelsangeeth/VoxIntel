@@ -25,5 +25,5 @@ app.conf.update(
     task_acks_late=True,
     worker_prefetch_multiplier=1,
     result_expires=3600,
-    broker_connection_retry_on_startup=True,   # suppress Celery 6.x deprecation warning
+    broker_connection_retry_on_startup=True,  # suppress Celery 6.x deprecation warning
 )

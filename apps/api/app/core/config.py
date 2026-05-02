@@ -51,7 +51,7 @@ class Settings(BaseSettings):
     SLACK_SUMMARY_CHANNEL: str = "#voxintel-summaries"
 
     # ── Webhooks ──────────────────────────────────────────────────────────
-    WEBHOOK_URL: str = ""          # Generic webhook fired after session summarization
+    WEBHOOK_URL: str = ""  # Generic webhook fired after session summarization
 
     # ── Observability ─────────────────────────────────────────────────────
     SENTRY_DSN: str = ""

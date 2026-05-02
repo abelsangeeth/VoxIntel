@@ -92,9 +92,7 @@ async def get_summary(
 ) -> SummaryRead:
     """Retrieve the auto-generated meeting minutes and action items."""
     result = await db.execute(
-        select(SessionSummary).where(
-            SessionSummary.conversation_id == session_id
-        )
+        select(SessionSummary).where(SessionSummary.conversation_id == session_id)
     )
     summary = result.scalar_one_or_none()
     if summary is None:

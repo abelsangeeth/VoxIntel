@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 # ── Import all models so Alembic can diff them ────────────────────────────
 import sys, os
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from apps.api.app.db.models import Base  # noqa: E402

@@ -1,7 +1,7 @@
 """Integrations endpoints — Phase 5.
 
-  POST /integrations/zoom/webhook   → Zoom App event receiver
-  POST /integrations/slack/webhook  → Slack Events API receiver
+POST /integrations/zoom/webhook   → Zoom App event receiver
+POST /integrations/slack/webhook  → Slack Events API receiver
 """
 
 import hashlib
@@ -24,6 +24,7 @@ router = APIRouter()
 
 
 # ── Zoom webhook ──────────────────────────────────────────────────────────────
+
 
 @router.post(
     "/zoom/webhook",
@@ -99,6 +100,7 @@ async def zoom_webhook(
 
 # ── Slack webhook ─────────────────────────────────────────────────────────────
 
+
 @router.post(
     "/slack/webhook",
     status_code=status.HTTP_200_OK,
@@ -168,6 +170,7 @@ async def post_summary_to_slack(channel: str, summary_text: str, action_items: l
 
 # ── Internal helpers ──────────────────────────────────────────────────────────
 
+
 def _verify_slack_signature(request: Request, body: bytes) -> None:
     """Raise 403 if the Slack request signature is invalid."""
     if not settings.SLACK_SIGNING_SECRET:
@@ -180,9 +183,12 @@ def _verify_slack_signature(request: Request, body: bytes) -> None:
         raise HTTPException(status_code=403, detail="Request too old")
 
     base = f"v0:{ts}:{body.decode()}"
-    expected = "v0=" + hmac.new(
-        settings.SLACK_SIGNING_SECRET.encode(), base.encode(), hashlib.sha256
-    ).hexdigest()
+    expected = (
+        "v0="
+        + hmac.new(
+            settings.SLACK_SIGNING_SECRET.encode(), base.encode(), hashlib.sha256
+        ).hexdigest()
+    )
     if not hmac.compare_digest(expected, sig):
         raise HTTPException(status_code=403, detail="Invalid Slack signature")
 

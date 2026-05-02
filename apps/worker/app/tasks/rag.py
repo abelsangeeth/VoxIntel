@@ -17,7 +17,7 @@ from app.core.config import settings
 
 logger = structlog.get_logger(__name__)
 
-CHUNK_SIZE = 512   # tokens
+CHUNK_SIZE = 512  # tokens
 CHUNK_OVERLAP = 64
 TOP_K = 5
 
@@ -80,6 +80,7 @@ def rag_query(self, conversation_id: str, question: str) -> dict:
 
 # ── Internal helpers ──────────────────────────────────────────────────────────
 
+
 def _split_text(text: str) -> list[dict]:
     """Split text into overlapping chunks using LangChain splitter."""
     try:
@@ -94,8 +95,7 @@ def _split_text(text: str) -> list[dict]:
         )
         texts = splitter.split_text(text)
         return [
-            {"text": t, "token_count": len(enc.encode(t)), "index": i}
-            for i, t in enumerate(texts)
+            {"text": t, "token_count": len(enc.encode(t)), "index": i} for i, t in enumerate(texts)
         ]
     except ImportError:
         # Fallback: naive character split

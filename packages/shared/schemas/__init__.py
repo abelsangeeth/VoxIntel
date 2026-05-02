@@ -4,8 +4,11 @@ from packages.shared.schemas.utterance import UtteranceCreate, UtteranceRead
 from packages.shared.schemas.document import DocumentRead
 
 __all__ = [
-    "ConversationCreate", "ConversationRead",
-    "SpeakerCreate", "SpeakerRead",
-    "UtteranceCreate", "UtteranceRead",
+    "ConversationCreate",
+    "ConversationRead",
+    "SpeakerCreate",
+    "SpeakerRead",
+    "UtteranceCreate",
+    "UtteranceRead",
     "DocumentRead",
 ]

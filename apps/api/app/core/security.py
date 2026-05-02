@@ -16,6 +16,7 @@ from app.core.config import settings
 
 # ── Password hashing ──────────────────────────────────────────────────────────
 
+
 def hash_password(plain: str) -> str:
     """Return a bcrypt hash of *plain* (work factor 12)."""
     return bcrypt.hashpw(plain.encode(), bcrypt.gensalt(12)).decode()
@@ -30,6 +31,7 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 
 # ── JWT ───────────────────────────────────────────────────────────────────────
+
 
 def create_access_token(subject: str, expires_delta: Optional[timedelta] = None) -> str:
     expire = datetime.now(timezone.utc) + (

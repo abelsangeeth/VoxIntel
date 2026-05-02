@@ -14,7 +14,7 @@ def _make_celery():
 
     app = Celery(
         broker=_REDIS_URL,
-        backend=_REDIS_URL,   # must match worker so .get() can retrieve results
+        backend=_REDIS_URL,  # must match worker so .get() can retrieve results
     )
     app.conf.update(
         task_serializer="json",
@@ -29,7 +29,7 @@ def _make_celery():
 _celery = _make_celery()
 
 # Named task signatures for enqueue-and-forget calls
-summarize_session_task  = _celery.signature("analytics.summarize_session")
-ingest_document_task    = _celery.signature("rag.ingest_document")
-run_diarization_task    = _celery.signature("diarization.run")
-analyze_utterance_task  = _celery.signature("analytics.analyze_utterance")
+summarize_session_task = _celery.signature("analytics.summarize_session")
+ingest_document_task = _celery.signature("rag.ingest_document")
+run_diarization_task = _celery.signature("diarization.run")
+analyze_utterance_task = _celery.signature("analytics.analyze_utterance")

@@ -31,13 +31,22 @@ AUDIO_UPLOAD_DIR = Path(os.getenv("AUDIO_UPLOAD_DIR", "/tmp/audio"))
 AUDIO_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 ALLOWED_AUDIO_TYPES = {
-    "audio/mpeg", "audio/mp3", "audio/wav", "audio/x-wav",
-    "audio/ogg", "audio/webm", "audio/mp4", "audio/flac",
-    "audio/aac", "audio/m4a", "application/octet-stream",
+    "audio/mpeg",
+    "audio/mp3",
+    "audio/wav",
+    "audio/x-wav",
+    "audio/ogg",
+    "audio/webm",
+    "audio/mp4",
+    "audio/flac",
+    "audio/aac",
+    "audio/m4a",
+    "application/octet-stream",
 }
 
 
 # ── Create session ─────────────────────────────────────────────────────────────
+
 
 @router.post("", response_model=ConversationRead, status_code=status.HTTP_201_CREATED)
 async def create_session(
@@ -61,6 +70,7 @@ async def create_session(
 
 # ── Get session ────────────────────────────────────────────────────────────────
 
+
 @router.get("/{session_id}", response_model=ConversationRead)
 async def get_session(
     session_id: uuid.UUID,
@@ -75,6 +85,7 @@ async def get_session(
 
 
 # ── Upload audio ───────────────────────────────────────────────────────────────
+
 
 @router.post("/{session_id}/audio", status_code=status.HTTP_202_ACCEPTED)
 async def upload_audio(
@@ -139,6 +150,7 @@ async def upload_audio(
 
 # ── SSE transcript stream ──────────────────────────────────────────────────────
 
+
 @router.get("/{session_id}/transcript/stream")
 async def stream_transcript(
     session_id: uuid.UUID,
@@ -149,6 +161,7 @@ async def stream_transcript(
     Server-Sent Events stream — delivers new utterances as they are written to the DB.
     Polls every 2 seconds; sends a keep-alive ping every 10 s when idle.
     """
+
     async def event_generator() -> AsyncGenerator[str, None]:
         last_seq = -1
         idle_ticks = 0
@@ -168,9 +181,7 @@ async def stream_transcript(
                 idle_ticks = 0
                 for utt, spk in rows:
                     last_seq = utt.sequence_number
-                    speaker_label = (
-                        spk.display_name or spk.label if spk else "Unknown"
-                    )
+                    speaker_label = spk.display_name or spk.label if spk else "Unknown"
                     event_data = json.dumps(
                         {
                             "type": "utterance",
@@ -195,6 +206,7 @@ async def stream_transcript(
 
 
 # ── RAG query ──────────────────────────────────────────────────────────────────
+
 
 @router.post("/{session_id}/rag")
 async def rag_query(

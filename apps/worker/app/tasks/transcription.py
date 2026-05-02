@@ -48,18 +48,29 @@ def transcribe_segment(
         text, confidence, language = _transcribe(audio_path, start, end)
         asyncio.run(
             _persist_utterance(
-                conversation_id, speaker_label, sequence_number,
-                start, end, text, confidence, language,
+                conversation_id,
+                speaker_label,
+                sequence_number,
+                start,
+                end,
+                text,
+                confidence,
+                language,
             )
         )
         log.info("transcription.complete", chars=len(text))
-        return {"conversation_id": conversation_id, "sequence_number": sequence_number, "text": text}
+        return {
+            "conversation_id": conversation_id,
+            "sequence_number": sequence_number,
+            "text": text,
+        }
     except Exception as exc:
         log.error("transcription.failed", error=str(exc))
         raise self.retry(exc=exc)
 
 
 # ── Internal helpers ──────────────────────────────────────────────────────────
+
 
 def _transcribe(audio_path: str, start: float, end: float) -> tuple[str, float, str]:
     """Return (text, confidence, language) for the segment."""
@@ -89,6 +100,7 @@ async def _persist_utterance(
 ) -> None:
     from sqlalchemy import select
     from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
     # app/db is mounted from apps/api/app/db via docker-compose volume
     from app.db.models import Speaker, Utterance  # type: ignore[import]
 

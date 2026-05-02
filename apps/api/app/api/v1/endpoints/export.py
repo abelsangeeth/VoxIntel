@@ -69,6 +69,7 @@ async def export_session(
 
 # ── Formatters ────────────────────────────────────────────────────────────────
 
+
 def _export_json(conv: Conversation, rows: list, summary) -> Response:
     import json
 
@@ -100,9 +101,7 @@ def _export_json(conv: Conversation, rows: list, summary) -> Response:
     return Response(
         content=json.dumps(payload, indent=2, default=str),
         media_type="application/json",
-        headers={
-            "Content-Disposition": f'attachment; filename="session_{conv.id}.json"'
-        },
+        headers={"Content-Disposition": f'attachment; filename="session_{conv.id}.json"'},
     )
 
 
@@ -110,29 +109,39 @@ def _export_csv(conv: Conversation, rows: list) -> StreamingResponse:
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(
-        ["sequence", "speaker", "start_s", "end_s", "text",
-         "confidence", "language", "sentiment", "sentiment_score", "intent"]
+        [
+            "sequence",
+            "speaker",
+            "start_s",
+            "end_s",
+            "text",
+            "confidence",
+            "language",
+            "sentiment",
+            "sentiment_score",
+            "intent",
+        ]
     )
     for utt, spk in rows:
-        writer.writerow([
-            utt.sequence_number,
-            spk.display_name or spk.label if spk else "Unknown",
-            utt.start_time,
-            utt.end_time,
-            utt.text,
-            utt.confidence,
-            utt.language,
-            utt.sentiment_label,
-            utt.sentiment_score,
-            utt.intent,
-        ])
+        writer.writerow(
+            [
+                utt.sequence_number,
+                spk.display_name or spk.label if spk else "Unknown",
+                utt.start_time,
+                utt.end_time,
+                utt.text,
+                utt.confidence,
+                utt.language,
+                utt.sentiment_label,
+                utt.sentiment_score,
+                utt.intent,
+            ]
+        )
     output.seek(0)
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
-        headers={
-            "Content-Disposition": f'attachment; filename="session_{conv.id}.csv"'
-        },
+        headers={"Content-Disposition": f'attachment; filename="session_{conv.id}.csv"'},
     )
 
 
@@ -143,9 +152,7 @@ def _export_pdf(conv: Conversation, rows: list, summary) -> Response:
         from reportlab.lib.pagesizes import A4
         from reportlab.lib.styles import getSampleStyleSheet
         from reportlab.lib.units import cm
-        from reportlab.platypus import (
-            Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
-        )
+        from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
         buf = io.BytesIO()
         doc = SimpleDocTemplate(buf, pagesize=A4)
@@ -181,21 +188,27 @@ def _export_pdf(conv: Conversation, rows: list, summary) -> Response:
             story.append(Paragraph("Transcript", styles["Heading2"]))
             tdata = [["#", "Speaker", "Time", "Text"]]
             for utt, spk in rows[:200]:  # cap at 200 rows for PDF size
-                tdata.append([
-                    str(utt.sequence_number),
-                    spk.display_name or spk.label if spk else "?",
-                    f"{utt.start_time:.1f}s",
-                    utt.text[:120],
-                ])
+                tdata.append(
+                    [
+                        str(utt.sequence_number),
+                        spk.display_name or spk.label if spk else "?",
+                        f"{utt.start_time:.1f}s",
+                        utt.text[:120],
+                    ]
+                )
             t = Table(tdata, colWidths=[1 * cm, 3 * cm, 2 * cm, 11 * cm])
-            t.setStyle(TableStyle([
-                ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-                ("FONTSIZE", (0, 0), (-1, -1), 8),
-                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.lightyellow]),
-                ("GRID", (0, 0), (-1, -1), 0.25, colors.black),
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ]))
+            t.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                        ("FONTSIZE", (0, 0), (-1, -1), 8),
+                        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.lightyellow]),
+                        ("GRID", (0, 0), (-1, -1), 0.25, colors.black),
+                        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ]
+                )
+            )
             story.append(t)
 
         doc.build(story)
@@ -203,9 +216,7 @@ def _export_pdf(conv: Conversation, rows: list, summary) -> Response:
         return Response(
             content=buf.read(),
             media_type="application/pdf",
-            headers={
-                "Content-Disposition": f'attachment; filename="session_{conv.id}.pdf"'
-            },
+            headers={"Content-Disposition": f'attachment; filename="session_{conv.id}.pdf"'},
         )
     except ImportError:
         # ReportLab not installed — return a plain-text fallback
@@ -220,7 +231,5 @@ def _export_pdf(conv: Conversation, rows: list, summary) -> Response:
         return Response(
             content="\n".join(lines),
             media_type="text/plain",
-            headers={
-                "Content-Disposition": f'attachment; filename="session_{conv.id}.txt"'
-            },
+            headers={"Content-Disposition": f'attachment; filename="session_{conv.id}.txt"'},
         )

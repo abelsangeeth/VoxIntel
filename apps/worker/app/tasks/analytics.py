@@ -22,6 +22,7 @@ logger = structlog.get_logger(__name__)
 
 # ── analyze_utterance ─────────────────────────────────────────────────────────
 
+
 @shared_task(
     name="analytics.analyze_utterance",
     bind=True,
@@ -47,6 +48,7 @@ def analyze_utterance(self, utterance_id: str) -> dict:
 
 
 # ── summarize_session ─────────────────────────────────────────────────────────
+
 
 @shared_task(
     name="analytics.summarize_session",
@@ -93,6 +95,7 @@ def summarize_session(self, conversation_id: str) -> dict:
 
 
 # ── Sentiment + intent ────────────────────────────────────────────────────────
+
 
 def _run_sentiment(text: str) -> tuple[str, float]:
     try:
@@ -166,6 +169,7 @@ def _generate_summary(transcript: str) -> tuple[str, list[str]]:
 
 
 # ── Async DB helpers ──────────────────────────────────────────────────────────
+
 
 async def _fetch_utterance_text(utterance_id: str) -> str:
     from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -333,7 +337,10 @@ async def _post_to_slack(summary: str, action_items: list) -> None:
         if action_items:
             items_md = "\n".join(f"• {i}" for i in action_items)
             blocks.append(
-                {"type": "section", "text": {"type": "mrkdwn", "text": f"*Action Items:*\n{items_md}"}}
+                {
+                    "type": "section",
+                    "text": {"type": "mrkdwn", "text": f"*Action Items:*\n{items_md}"},
+                }
             )
         async with httpx.AsyncClient(timeout=10) as client:
             resp = await client.post(

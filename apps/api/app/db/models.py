@@ -31,6 +31,7 @@ class Base(DeclarativeBase):
 # Conversations
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class Conversation(Base):
     """Top-level container for a meeting / audio session."""
 
@@ -63,17 +64,19 @@ class Conversation(Base):
 # Speakers
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class Speaker(Base):
     """An identified speaker within a conversation."""
 
     __tablename__ = "speakers"
-    __table_args__ = (
-        UniqueConstraint("conversation_id", "label", name="uq_speakers_conv_label"),
-    )
+    __table_args__ = (UniqueConstraint("conversation_id", "label", name="uq_speakers_conv_label"),)
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     conversation_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False, index=True
+        UUID(as_uuid=True),
+        ForeignKey("conversations.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     label: Mapped[str] = mapped_column(String(50), nullable=False)  # e.g. "SPEAKER_00"
     display_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
@@ -92,6 +95,7 @@ class Speaker(Base):
 # Utterances
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class Utterance(Base):
     """A single speaker turn — the atomic unit of a transcript."""
 
@@ -102,13 +106,19 @@ class Utterance(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     conversation_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False, index=True
+        UUID(as_uuid=True),
+        ForeignKey("conversations.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     speaker_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("speakers.id", ondelete="SET NULL"), nullable=True, index=True
+        UUID(as_uuid=True),
+        ForeignKey("speakers.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
     )
     sequence_number: Mapped[int] = mapped_column(Integer, nullable=False)
-    start_time: Mapped[float] = mapped_column(Float, nullable=False)   # seconds from session start
+    start_time: Mapped[float] = mapped_column(Float, nullable=False)  # seconds from session start
     end_time: Mapped[float] = mapped_column(Float, nullable=False)
     text: Mapped[str] = mapped_column(Text, nullable=False)
     confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -123,15 +133,14 @@ class Utterance(Base):
         DateTime(timezone=True), nullable=False, default=utcnow
     )
 
-    conversation: Mapped["Conversation"] = relationship(
-        "Conversation", back_populates="utterances"
-    )
+    conversation: Mapped["Conversation"] = relationship("Conversation", back_populates="utterances")
     speaker: Mapped["Speaker | None"] = relationship("Speaker", back_populates="utterances")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Documents
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class Document(Base):
     """A knowledge-base document uploaded for RAG ingestion."""
@@ -164,7 +173,10 @@ class DocumentChunk(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     document_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("documents.id", ondelete="CASCADE"), nullable=False, index=True
+        UUID(as_uuid=True),
+        ForeignKey("documents.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
     text: Mapped[str] = mapped_column(Text, nullable=False)
@@ -180,6 +192,7 @@ class DocumentChunk(Base):
 # ─────────────────────────────────────────────────────────────────────────────
 # Session summaries  (Phase 3)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class SessionSummary(Base):
     """Auto-generated meeting minutes + action items produced after a session ends."""
