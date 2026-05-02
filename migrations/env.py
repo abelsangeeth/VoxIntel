@@ -17,7 +17,11 @@ from apps.api.app.db.models import Base  # noqa: E402
 
 config = context.config
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    try:
+        fileConfig(config.config_file_name)
+    except KeyError:
+        # Handle case where alembic.ini doesn't have logging sections
+        pass
 
 target_metadata = Base.metadata
 

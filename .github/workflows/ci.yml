@@ -115,7 +115,7 @@ jobs:
           cache: pip
 
       - name: Install worker deps (no heavy torch)
-        run: pip install celery redis pydantic-settings structlog pytest pytest-asyncio
+        run: pip install celery redis pydantic-settings structlog httpx openai qdrant-client langchain-text-splitters tiktoken sqlalchemy asyncpg pytest pytest-asyncio
 
       - name: Run worker tests
         run: pytest apps/worker/tests -v --tb=short
