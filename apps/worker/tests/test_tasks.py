@@ -1,7 +1,5 @@
 """Worker task unit tests — no real services required."""
 
-import pytest
-
 
 def test_split_text_produces_chunks():
     from apps.worker.app.tasks.rag import _split_text
