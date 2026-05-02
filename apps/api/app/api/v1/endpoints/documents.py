@@ -11,13 +11,13 @@ Improvements:
 import uuid
 
 import structlog
+from app.core.database import get_db
+from app.core.deps import get_current_user
+from app.db.models import Document
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
-from app.core.deps import get_current_user
-from app.db.models import Document
 from packages.shared.schemas.document import DocumentRead
 
 logger = structlog.get_logger(__name__)
@@ -109,6 +109,7 @@ def _extract_text(raw_bytes: bytes, content_type: str) -> str:
     if content_type == "application/pdf":
         try:
             import io
+
             from pypdf import PdfReader  # type: ignore
 
             reader = PdfReader(io.BytesIO(raw_bytes))
@@ -122,6 +123,7 @@ def _extract_text(raw_bytes: bytes, content_type: str) -> str:
     ):
         try:
             import io
+
             from docx import Document as DocxDoc  # type: ignore
 
             doc = DocxDoc(io.BytesIO(raw_bytes))

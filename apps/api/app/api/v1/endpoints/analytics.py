@@ -8,13 +8,13 @@ Endpoints:
 
 import uuid
 
+from app.core.database import get_db
+from app.core.deps import get_current_user
+from app.db.models import Conversation, SessionSummary, Utterance
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
-from app.core.deps import get_current_user
-from app.db.models import Conversation, SessionSummary, Utterance
 from packages.shared.schemas.utterance import UtteranceRead
 
 router = APIRouter()
@@ -22,8 +22,8 @@ router = APIRouter()
 
 # ── Pydantic response models ──────────────────────────────────────────────────
 
-from datetime import datetime
-from typing import Any, Optional
+from datetime import UTC, datetime
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -63,10 +63,10 @@ async def end_session(
     if conv.status == "ended":
         raise HTTPException(status_code=409, detail="Session already ended")
 
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     conv.status = "ended"
-    conv.ended_at = datetime.now(timezone.utc)
+    conv.ended_at = datetime.now(UTC)
     await db.flush()
 
     # Enqueue async summarisation via Celery

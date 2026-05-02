@@ -2,7 +2,7 @@
 
 import uuid
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
@@ -14,9 +14,9 @@ class DocumentRead(BaseModel):
     filename: str
     content_type: str
     status: str
-    tags: Dict[str, Any] = {}
-    chunk_count: Optional[int]
-    token_count: Optional[int]
-    error_message: Optional[str]
+    tags: dict[str, Any] = {}
+    chunk_count: int | None
+    token_count: int | None
+    error_message: str | None
     created_at: datetime
-    processed_at: Optional[datetime]
+    processed_at: datetime | None

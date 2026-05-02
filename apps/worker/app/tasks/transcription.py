@@ -8,9 +8,8 @@ import asyncio
 import uuid
 
 import structlog
-from celery import shared_task
-
 from app.core.config import settings
+from celery import shared_task
 
 logger = structlog.get_logger(__name__)
 
@@ -98,11 +97,10 @@ async def _persist_utterance(
     confidence: float,
     language: str,
 ) -> None:
-    from sqlalchemy import select
-    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-
     # app/db is mounted from apps/api/app/db via docker-compose volume
     from app.db.models import Speaker, Utterance  # type: ignore[import]
+    from sqlalchemy import select
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
     engine = create_async_engine(settings.DATABASE_URL, pool_pre_ping=True)
     SessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)

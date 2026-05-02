@@ -1,7 +1,7 @@
 """Celery application — entry point for the async worker."""
 
-from celery import Celery
 from app.core.config import settings
+from celery import Celery
 
 app = Celery(
     "voxintel_worker",

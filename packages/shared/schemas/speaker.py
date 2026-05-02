@@ -2,7 +2,6 @@
 
 import uuid
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -10,7 +9,7 @@ from pydantic import BaseModel, ConfigDict
 class SpeakerCreate(BaseModel):
     conversation_id: uuid.UUID
     label: str
-    display_name: Optional[str] = None
+    display_name: str | None = None
 
 
 class SpeakerRead(BaseModel):
@@ -19,5 +18,5 @@ class SpeakerRead(BaseModel):
     id: uuid.UUID
     conversation_id: uuid.UUID
     label: str
-    display_name: Optional[str]
+    display_name: str | None
     created_at: datetime

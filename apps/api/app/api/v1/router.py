@@ -1,14 +1,13 @@
 """v1 router — aggregates all endpoint sub-routers."""
 
-from fastapi import APIRouter
-
-from app.api.v1.endpoints.auth import router as auth_router
-from app.api.v1.endpoints.health import router as health_router
-from app.api.v1.endpoints.sessions import router as sessions_router
-from app.api.v1.endpoints.documents import router as documents_router
 from app.api.v1.endpoints.analytics import router as analytics_router
+from app.api.v1.endpoints.auth import router as auth_router
+from app.api.v1.endpoints.documents import router as documents_router
 from app.api.v1.endpoints.export import router as export_router
+from app.api.v1.endpoints.health import router as health_router
 from app.api.v1.endpoints.integrations import router as integrations_router
+from app.api.v1.endpoints.sessions import router as sessions_router
+from fastapi import APIRouter
 
 v1_router = APIRouter()
 

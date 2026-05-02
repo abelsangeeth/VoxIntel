@@ -1,9 +1,8 @@
 """FastAPI shared dependencies — auth, rate-limiting guard, etc."""
 
+from app.core.security import decode_access_token
 from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
-
-from app.core.security import decode_access_token
 
 # ── JWT bearer ───────────────────────────────────────────────────────────────
 

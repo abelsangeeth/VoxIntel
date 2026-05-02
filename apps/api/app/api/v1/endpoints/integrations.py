@@ -9,15 +9,15 @@ import hmac
 import json
 import time
 import uuid
+from datetime import UTC
 
 import httpx
 import structlog
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.config import settings
 from app.core.database import get_db
 from app.db.models import Conversation
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = structlog.get_logger(__name__)
 router = APIRouter()
@@ -87,10 +87,10 @@ async def zoom_webhook(
         )
         conv = result.scalar_one_or_none()
         if conv:
-            from datetime import datetime, timezone
+            from datetime import datetime
 
             conv.status = "ended"
-            conv.ended_at = datetime.now(timezone.utc)
+            conv.ended_at = datetime.now(UTC)
             await db.flush()
             background.add_task(_enqueue_summarise, str(conv.id))
             logger.info("zoom.meeting.ended", meeting_id=meeting_id)

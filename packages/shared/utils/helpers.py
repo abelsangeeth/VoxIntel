@@ -2,7 +2,7 @@
 
 import hashlib
 import re
-from typing import Any, Dict
+from typing import Any
 
 
 def slugify(text: str) -> str:
@@ -18,7 +18,7 @@ def sha256_hex(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def flatten_dict(d: Dict[str, Any], parent_key: str = "", sep: str = ".") -> Dict[str, Any]:
+def flatten_dict(d: dict[str, Any], parent_key: str = "", sep: str = ".") -> dict[str, Any]:
     """Flatten a nested dict using dot-notation keys."""
     items: list = []
     for k, v in d.items():

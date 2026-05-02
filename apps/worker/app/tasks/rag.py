@@ -8,12 +8,11 @@ Tasks:
 
 import asyncio
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import structlog
-from celery import shared_task
-
 from app.core.config import settings
+from celery import shared_task
 
 logger = structlog.get_logger(__name__)
 
@@ -84,8 +83,8 @@ def rag_query(self, conversation_id: str, question: str) -> dict:
 def _split_text(text: str) -> list[dict]:
     """Split text into overlapping chunks using LangChain splitter."""
     try:
-        from langchain_text_splitters import RecursiveCharacterTextSplitter
         import tiktoken
+        from langchain_text_splitters import RecursiveCharacterTextSplitter
 
         enc = tiktoken.encoding_for_model("gpt-4o")
         splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
@@ -197,8 +196,8 @@ def _generate(question: str, context: str) -> str:
 
 
 async def _mark_document_processed(document_id: str, chunk_count: int) -> None:
-    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
     from app.db.models import Document  # mounted from apps/api/app/db
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
     engine = create_async_engine(settings.DATABASE_URL, pool_pre_ping=True)
     SessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
@@ -208,6 +207,6 @@ async def _mark_document_processed(document_id: str, chunk_count: int) -> None:
         if doc:
             doc.status = "processed"
             doc.chunk_count = chunk_count
-            doc.processed_at = datetime.now(timezone.utc)
+            doc.processed_at = datetime.now(UTC)
         await session.commit()
     await engine.dispose()

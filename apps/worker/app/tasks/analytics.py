@@ -9,13 +9,11 @@ Changes vs stub:
 import asyncio
 import json
 import uuid
-from datetime import datetime, timezone
 
 import httpx
 import structlog
-from celery import shared_task
-
 from app.core.config import settings
+from celery import shared_task
 
 logger = structlog.get_logger(__name__)
 
@@ -172,8 +170,8 @@ def _generate_summary(transcript: str) -> tuple[str, list[str]]:
 
 
 async def _fetch_utterance_text(utterance_id: str) -> str:
-    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
     from app.db.models import Utterance  # local import avoids circular deps
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
     engine = create_async_engine(settings.DATABASE_URL, pool_pre_ping=True)
     SessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
@@ -187,8 +185,8 @@ async def _fetch_utterance_text(utterance_id: str) -> str:
 async def _update_utterance_analytics(
     utterance_id: str, sentiment_label: str, sentiment_score: float, intent: str
 ) -> None:
-    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
     from app.db.models import Utterance
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
     engine = create_async_engine(settings.DATABASE_URL, pool_pre_ping=True)
     SessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
@@ -203,9 +201,9 @@ async def _update_utterance_analytics(
 
 
 async def _fetch_full_transcript(conversation_id: str) -> str:
+    from app.db.models import Speaker, Utterance
     from sqlalchemy import select
     from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-    from app.db.models import Utterance, Speaker
 
     engine = create_async_engine(settings.DATABASE_URL, pool_pre_ping=True)
     SessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
@@ -226,9 +224,10 @@ async def _fetch_full_transcript(conversation_id: str) -> str:
 
 async def _aggregate_intents(conversation_id: str) -> list[dict]:
     from collections import Counter
+
+    from app.db.models import Utterance
     from sqlalchemy import select
     from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-    from app.db.models import Utterance
 
     engine = create_async_engine(settings.DATABASE_URL, pool_pre_ping=True)
     SessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
@@ -245,9 +244,9 @@ async def _aggregate_intents(conversation_id: str) -> list[dict]:
 
 
 async def _build_sentiment_arc(conversation_id: str) -> list[dict]:
+    from app.db.models import Utterance
     from sqlalchemy import select
     from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-    from app.db.models import Utterance
 
     engine = create_async_engine(settings.DATABASE_URL, pool_pre_ping=True)
     SessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
@@ -277,9 +276,9 @@ async def _persist_summary(
     top_intents: list,
     sentiment_arc: list,
 ) -> None:
+    from app.db.models import SessionSummary
     from sqlalchemy import select
     from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-    from app.db.models import SessionSummary
 
     engine = create_async_engine(settings.DATABASE_URL, pool_pre_ping=True)
     SessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)

@@ -2,7 +2,7 @@
 
 import uuid
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
@@ -10,8 +10,8 @@ from pydantic import BaseModel, ConfigDict
 class ConversationCreate(BaseModel):
     title: str
     source: str = "upload"
-    external_id: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    external_id: str | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class ConversationRead(BaseModel):
@@ -20,8 +20,8 @@ class ConversationRead(BaseModel):
     id: uuid.UUID
     title: str
     source: str
-    external_id: Optional[str]
+    external_id: str | None
     status: str
     created_at: datetime
     updated_at: datetime
-    ended_at: Optional[datetime]
+    ended_at: datetime | None

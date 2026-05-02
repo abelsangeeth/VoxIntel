@@ -1,9 +1,9 @@
 from app.db.models import (
     Base,
     Conversation,
-    Speaker,
-    Utterance,
     Document,
     DocumentChunk,
     SessionSummary,
+    Speaker,
+    Utterance,
 )  # noqa: F401

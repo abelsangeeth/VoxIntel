@@ -2,10 +2,9 @@
 
 from datetime import timedelta
 
+from app.core.security import create_access_token, hash_password, verify_password
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
-
-from app.core.security import create_access_token, hash_password, verify_password
 
 router = APIRouter()
 

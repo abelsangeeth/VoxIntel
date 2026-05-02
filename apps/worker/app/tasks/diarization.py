@@ -10,12 +10,10 @@ Flow:
 
 import asyncio
 import uuid
-from pathlib import Path
 
 import structlog
-from celery import shared_task
-
 from app.core.config import settings
+from celery import shared_task
 
 logger = structlog.get_logger(__name__)
 
@@ -88,11 +86,10 @@ def _diarize(audio_path: str) -> list[dict]:
 
 async def _persist_segments(conversation_id: str, segments: list[dict]) -> None:
     """Write Speaker rows (if new) to the database."""
-    from sqlalchemy import select
-    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-
     # app/db is mounted from apps/api/app/db via docker-compose volume
     from app.db.models import Speaker  # type: ignore[import]
+    from sqlalchemy import select
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
     engine = create_async_engine(settings.DATABASE_URL, pool_pre_ping=True)
     SessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)

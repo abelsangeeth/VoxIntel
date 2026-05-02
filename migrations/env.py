@@ -1,14 +1,15 @@
 """Alembic env.py — async-compatible migrations."""
 
 import asyncio
+import os
+
+# ── Import all models so Alembic can diff them ────────────────────────────
+import sys
 from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
-
-# ── Import all models so Alembic can diff them ────────────────────────────
-import sys, os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
