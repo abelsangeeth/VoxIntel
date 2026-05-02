@@ -1,0 +1,133 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # ── Lint & Type-check ─────────────────────────────────────────────────────
+  lint:
+    name: Lint & type-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install linting tools
+        run: pip install ruff mypy
+
+      - name: Ruff lint
+        run: ruff check apps/ packages/ migrations/
+
+      - name: Ruff format check
+        run: ruff format --check apps/ packages/ migrations/
+
+      - name: Mypy (api)
+        run: mypy apps/api/app --ignore-missing-imports
+
+  # ── API tests ─────────────────────────────────────────────────────────────
+  test-api:
+    name: API tests
+    runs-on: ubuntu-latest
+    needs: lint
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: voxintel
+          POSTGRES_PASSWORD: voxintel
+          POSTGRES_DB: voxintel
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://voxintel:voxintel@localhost:5432/voxintel
+      REDIS_URL: redis://localhost:6379/0
+      SECRET_KEY: ci-test-secret
+      OPENAI_API_KEY: stub
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install API deps
+        run: pip install -r apps/api/requirements.txt
+
+      - name: Run Alembic migrations
+        run: alembic upgrade head
+        working-directory: .
+
+      - name: Run API tests
+        run: pytest apps/api/tests -v --tb=short
+
+  # ── Worker tests ──────────────────────────────────────────────────────────
+  test-worker:
+    name: Worker tests
+    runs-on: ubuntu-latest
+    needs: lint
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      REDIS_URL: redis://localhost:6379/0
+      OPENAI_API_KEY: stub
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install worker deps (no heavy torch)
+        run: pip install celery redis pydantic-settings structlog pytest pytest-asyncio
+
+      - name: Run worker tests
+        run: pytest apps/worker/tests -v --tb=short
+
+  # ── Docker build smoke test ────────────────────────────────────────────────
+  docker-build:
+    name: Docker build
+    runs-on: ubuntu-latest
+    needs: [test-api, test-worker]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build API image
+        run: docker build -t voxintel-api:ci ./apps/api
+
+      - name: Build worker image
+        run: docker build -t voxintel-worker:ci ./apps/worker

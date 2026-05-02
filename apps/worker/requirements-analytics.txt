@@ -1,0 +1,7 @@
+# requirements-analytics.txt
+# Install separately to avoid version conflicts with torch:
+#   pip install -r requirements-analytics.txt
+
+# Sentiment model (already pulled in via transformers in main requirements)
+# Phase 3 BERTopic for topic clustering
+bertopic==0.16.2

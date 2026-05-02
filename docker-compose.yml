@@ -1,0 +1,130 @@
+services:
+  # ── Postgres ──────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: voxintel_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: voxintel
+      POSTGRES_PASSWORD: voxintel
+      POSTGRES_DB: voxintel
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U voxintel"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ─────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: voxintel_redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Qdrant (vector store) ─────────────────────────────
+  qdrant:
+    image: qdrant/qdrant:v1.9.2
+    container_name: voxintel_qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  # ── API ───────────────────────────────────────────────
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: voxintel_api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://voxintel:voxintel@postgres:5432/voxintel
+      REDIS_URL: redis://redis:6379/0
+      QDRANT_URL: http://qdrant:6333
+      PYTHONPATH: /app
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./apps/api:/app
+      - ./packages:/app/packages
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ── Worker ────────────────────────────────────────────
+  worker:
+    build:
+      context: ./apps/worker
+      dockerfile: Dockerfile
+      args:
+        # "dev"  → no torch, fast build (~200 MB) — ML tasks use stubs
+        # "full" → full ML stack, ~6 GB, GPU recommended
+        BUILD_TARGET: dev
+    container_name: voxintel_worker
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://voxintel:voxintel@postgres:5432/voxintel
+      REDIS_URL: redis://redis:6379/0
+      QDRANT_URL: http://qdrant:6333
+      PYTHONPATH: /app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./apps/worker:/app
+      - ./packages:/app/packages
+      - ./apps/api/app/db:/app/app/db
+      - audio_uploads:/tmp/audio
+
+  # ── Prometheus ────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.51.2
+    container_name: voxintel_prometheus
+    restart: unless-stopped
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    profiles: ["observability"]
+
+  # ── Grafana ───────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: voxintel_grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    profiles: ["observability"]
+
+volumes:
+  postgres_data:
+  redis_data:
+  qdrant_data:
+  grafana_data:
+  audio_uploads:

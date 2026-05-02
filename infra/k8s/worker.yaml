@@ -1,0 +1,74 @@
+# ── Worker Deployment ──────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voxintel-worker
+  labels:
+    app: voxintel-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: voxintel-worker
+  template:
+    metadata:
+      labels:
+        app: voxintel-worker
+    spec:
+      containers:
+        - name: worker
+          image: voxintel-worker:latest
+          envFrom:
+            - secretRef:
+                name: voxintel-secrets
+          env:
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: voxintel-secrets
+                  key: REDIS_URL
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: voxintel-secrets
+                  key: DATABASE_URL
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+          command:
+            - celery
+            - -A
+            - app.main
+            - worker
+            - --loglevel=info
+            - --concurrency=4
+          volumeMounts:
+            - name: audio-storage
+              mountPath: /tmp/audio
+      volumes:
+        - name: audio-storage
+          emptyDir: {}
+---
+# ── Worker HPA — scale on queue depth via KEDA (or CPU fallback) ──────────────
+# Install KEDA: https://keda.sh/docs/latest/deploy/
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: voxintel-worker-scaler
+spec:
+  scaleTargetRef:
+    name: voxintel-worker
+  minReplicaCount: 2
+  maxReplicaCount: 20
+  pollingInterval: 15
+  cooldownPeriod: 60
+  triggers:
+    - type: redis
+      metadata:
+        address: redis:6379
+        listName: celery   # Celery default queue key
+        listLength: "5"    # scale up when queue depth > 5 tasks per replica

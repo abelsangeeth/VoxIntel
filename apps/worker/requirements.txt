@@ -1,0 +1,30 @@
+celery==5.4.0
+redis[hiredis]==5.0.4
+sqlalchemy[asyncio]==2.0.29
+asyncpg==0.29.0
+pydantic-settings==2.2.1
+structlog==24.1.0
+httpx==0.27.0
+
+# Phase 1 — Diarization / ASR
+torch==2.3.0
+torchaudio==2.3.0
+pyannote.audio==3.3.1
+transformers==4.41.0
+faster-whisper==1.0.2
+
+# Phase 2 — RAG
+openai==1.30.1
+anthropic==0.26.0
+qdrant-client==1.9.1
+tiktoken==0.7.0
+pypdf==4.2.0
+python-docx==1.1.2
+langchain-text-splitters==0.2.0
+
+# Phase 3 — Analytics (install separately if torch conflicts arise)
+# pip install -r requirements-analytics.txt
+
+# Dev / test
+pytest==8.2.0
+pytest-asyncio==0.23.6

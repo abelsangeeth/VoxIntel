@@ -1,0 +1,49 @@
+# ── Ingress ────────────────────────────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: voxintel-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-burst-multiplier: "2"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"    # SSE keepalive
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - api.voxintel.io
+      secretName: voxintel-tls
+  rules:
+    - host: api.voxintel.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: voxintel-api
+                port:
+                  number: 80
+---
+# ── Secrets (placeholder — populate via kubectl create secret or Helm values) ──
+apiVersion: v1
+kind: Secret
+metadata:
+  name: voxintel-secrets
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql+asyncpg://voxintel:CHANGE_ME@postgres:5432/voxintel"
+  REDIS_URL: "redis://redis:6379/0"
+  SECRET_KEY: "CHANGE_ME_IN_PRODUCTION"
+  OPENAI_API_KEY: ""
+  ANTHROPIC_API_KEY: ""
+  HUGGINGFACE_TOKEN: ""
+  ASSEMBLY_AI_API_KEY: ""
+  ZOOM_CLIENT_ID: ""
+  ZOOM_CLIENT_SECRET: ""
+  SLACK_BOT_TOKEN: ""
+  SLACK_SIGNING_SECRET: ""
+  SENTRY_DSN: ""
