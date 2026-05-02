@@ -65,6 +65,7 @@ jobs:
       REDIS_URL: redis://localhost:6379/0
       SECRET_KEY: ci-test-secret
       OPENAI_API_KEY: stub
+      PYTHONPATH: "apps/api:."
 
     steps:
       - uses: actions/checkout@v4
@@ -103,6 +104,7 @@ jobs:
     env:
       REDIS_URL: redis://localhost:6379/0
       OPENAI_API_KEY: stub
+      PYTHONPATH: "apps/worker:."
 
     steps:
       - uses: actions/checkout@v4
