@@ -21,6 +21,11 @@ if config.config_file_name is not None:
     with contextlib.suppress(KeyError):
         fileConfig(config.config_file_name)
 
+# Override DB URL from environment if set (e.g. in CI / Docker)
+db_url = os.environ.get("DATABASE_URL")
+if db_url:
+    config.set_main_option("sqlalchemy.url", db_url)
+
 target_metadata = Base.metadata
 
 

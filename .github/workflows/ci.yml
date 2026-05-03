@@ -76,7 +76,7 @@ jobs:
           cache: pip
 
       - name: Install API deps
-        run: pip install -r apps/api/requirements.txt
+        run: pip install -r apps/api/requirements.txt asyncpg psycopg2-binary
 
       - name: Run Alembic migrations
         run: alembic upgrade head
