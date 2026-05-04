@@ -1,9 +1,4 @@
-"""JWT + password hashing utilities.
-
-Uses `bcrypt` directly instead of passlib to avoid the passlib/bcrypt-4.x
-compatibility bug (ValueError: password cannot be longer than 72 bytes in
-passlib's detect_wrap_bug routine).
-"""
+"""JWT + password hashing utilities."""
 
 from datetime import UTC, datetime, timedelta
 
@@ -30,18 +25,24 @@ def verify_password(plain: str, hashed: str) -> bool:
 # ── JWT ───────────────────────────────────────────────────────────────────────
 
 
-def create_access_token(subject: str, expires_delta: timedelta | None = None) -> str:
+def create_access_token(
+    subject: str,
+    expires_delta: timedelta | None = None,
+    extra: dict | None = None,
+) -> str:
+    """Create a signed JWT with an optional extra payload dict."""
     expire = datetime.now(UTC) + (
         expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
-    payload = {"sub": subject, "exp": expire}
+    payload: dict = {"sub": subject, "exp": expire}
+    if extra:
+        payload.update(extra)
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
-def decode_access_token(token: str) -> str | None:
-    """Return the subject (user id) or None if the token is invalid/expired."""
+def decode_access_token(token: str) -> dict | None:
+    """Return the full decoded payload or None if invalid/expired."""
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        return payload.get("sub")
+        return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
     except JWTError:
         return None

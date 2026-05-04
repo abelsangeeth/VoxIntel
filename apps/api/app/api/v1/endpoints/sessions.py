@@ -16,8 +16,10 @@ from pathlib import Path
 import structlog
 from app.core.database import get_db
 from app.core.deps import get_current_user
-from app.db.models import Conversation, Speaker, Utterance
+from app.core.deps import get_current_user
+from app.db.models import Conversation, Speaker, Utterance, User
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from app.core.database import get_db as _get_db
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -52,7 +54,7 @@ ALLOWED_AUDIO_TYPES = {
 async def create_session(
     payload: ConversationCreate,
     db: AsyncSession = Depends(get_db),
-    _user: str = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> ConversationRead:
     """Create a new conversation session."""
     conversation = Conversation(
@@ -61,6 +63,7 @@ async def create_session(
         external_id=payload.external_id,
         source=payload.source,
         metadata_=payload.metadata or {},
+        owner_id=current_user.id,
     )
     db.add(conversation)
     await db.flush()
