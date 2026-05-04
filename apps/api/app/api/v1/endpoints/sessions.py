@@ -16,7 +16,7 @@ from pathlib import Path
 import structlog
 from app.core.database import get_db
 from app.core.deps import get_current_user
-from app.db.models import Conversation, Speaker, Utterance, User
+from app.db.models import Conversation, Speaker, User, Utterance
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select
