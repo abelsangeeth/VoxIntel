@@ -12,7 +12,12 @@ class Settings(BaseSettings):
     # ── App ───────────────────────────────────────────────────────────────
     ENV: str = "development"
     LOG_LEVEL: str = "INFO"
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:8000"]
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:8000",
+        "https://voxintel-production.up.railway.app",
+    ]
 
     # ── Database ──────────────────────────────────────────────────────────
     DATABASE_URL: str = "postgresql+asyncpg://voxintel:voxintel@localhost:5432/voxintel"
