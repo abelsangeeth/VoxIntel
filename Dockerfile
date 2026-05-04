@@ -16,6 +16,10 @@ RUN pip install --no-cache-dir https://github.com/explosion/spacy-models/release
 COPY apps/api/app ./app
 COPY packages ./packages
 
+# Copy Alembic migration config
+COPY alembic.ini .
+COPY migrations ./migrations
+
 EXPOSE 8000
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
