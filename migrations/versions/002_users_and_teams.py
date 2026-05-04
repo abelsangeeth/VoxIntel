@@ -32,8 +32,18 @@ def upgrade() -> None:
         sa.Column("is_verified", sa.Boolean, nullable=False, server_default="false"),
         sa.Column("preferences", postgresql.JSONB, nullable=False, server_default="{}"),
         sa.Column("last_login_at", sa.DateTime(timezone=True), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.text("now()"),
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.text("now()"),
+        ),
         sa.UniqueConstraint("email", name="uq_users_email"),
         sa.UniqueConstraint("username", name="uq_users_username"),
     )
@@ -44,13 +54,23 @@ def upgrade() -> None:
     op.create_table(
         "user_sessions",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "user_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("users.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
         sa.Column("token_jti", sa.String(100), nullable=False),
         sa.Column("user_agent", sa.String(512), nullable=True),
         sa.Column("ip_address", sa.String(45), nullable=True),
         sa.Column("is_revoked", sa.Boolean, nullable=False, server_default="false"),
         sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.text("now()"),
+        ),
         sa.UniqueConstraint("token_jti", name="uq_user_sessions_jti"),
     )
     op.create_index("ix_user_sessions_user_id", "user_sessions", ["user_id"])
@@ -62,11 +82,26 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("name", sa.String(255), nullable=False),
         sa.Column("slug", sa.String(100), nullable=False),
-        sa.Column("owner_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="RESTRICT"), nullable=False),
+        sa.Column(
+            "owner_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("users.id", ondelete="RESTRICT"),
+            nullable=False,
+        ),
         sa.Column("plan", sa.String(30), nullable=False, server_default="free"),
         sa.Column("settings", postgresql.JSONB, nullable=False, server_default="{}"),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.text("now()"),
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.text("now()"),
+        ),
         sa.UniqueConstraint("slug", name="uq_teams_slug"),
     )
     op.create_index("ix_teams_slug", "teams", ["slug"])
@@ -76,11 +111,28 @@ def upgrade() -> None:
     op.create_table(
         "team_members",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("team_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("teams.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "team_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("teams.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Column(
+            "user_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("users.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
         sa.Column("role", sa.String(30), nullable=False, server_default="member"),
-        sa.Column("invited_by", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="SET NULL"), nullable=True),
-        sa.Column("joined_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
+        sa.Column(
+            "invited_by",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("users.id", ondelete="SET NULL"),
+            nullable=True,
+        ),
+        sa.Column(
+            "joined_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")
+        ),
         sa.UniqueConstraint("team_id", "user_id", name="uq_team_members_team_user"),
     )
     op.create_index("ix_team_members_team_id", "team_members", ["team_id"])
@@ -90,26 +142,60 @@ def upgrade() -> None:
     op.create_table(
         "audit_logs",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="SET NULL"), nullable=True),
+        sa.Column(
+            "user_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("users.id", ondelete="SET NULL"),
+            nullable=True,
+        ),
         sa.Column("action", sa.String(100), nullable=False),
         sa.Column("resource_type", sa.String(50), nullable=True),
         sa.Column("resource_id", sa.String(100), nullable=True),
         sa.Column("ip_address", sa.String(45), nullable=True),
         sa.Column("user_agent", sa.String(512), nullable=True),
         sa.Column("extra", postgresql.JSONB, nullable=False, server_default="{}"),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.text("now()"),
+        ),
     )
     op.create_index("ix_audit_logs_user_id", "audit_logs", ["user_id"])
     op.create_index("ix_audit_logs_created_at", "audit_logs", ["created_at"])
 
     # ── extend conversations ──────────────────────────────────────────────
-    op.add_column("conversations", sa.Column("owner_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="SET NULL"), nullable=True))
-    op.add_column("conversations", sa.Column("team_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("teams.id", ondelete="SET NULL"), nullable=True))
+    op.add_column(
+        "conversations",
+        sa.Column(
+            "owner_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("users.id", ondelete="SET NULL"),
+            nullable=True,
+        ),
+    )
+    op.add_column(
+        "conversations",
+        sa.Column(
+            "team_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("teams.id", ondelete="SET NULL"),
+            nullable=True,
+        ),
+    )
     op.create_index("ix_conversations_owner_id", "conversations", ["owner_id"])
     op.create_index("ix_conversations_team_id", "conversations", ["team_id"])
 
     # ── extend documents ──────────────────────────────────────────────────
-    op.add_column("documents", sa.Column("uploaded_by", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="SET NULL"), nullable=True))
+    op.add_column(
+        "documents",
+        sa.Column(
+            "uploaded_by",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("users.id", ondelete="SET NULL"),
+            nullable=True,
+        ),
+    )
     op.create_index("ix_documents_uploaded_by", "documents", ["uploaded_by"])
 
     # ── seed demo user (matches the hardcoded demo account) ───────────────

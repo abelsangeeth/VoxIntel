@@ -103,14 +103,16 @@ async def register(
     )
     db.add(user)
 
-    db.add(AuditLog(
-        user_id=user.id,
-        action="user.register",
-        resource_type="user",
-        resource_id=str(user.id),
-        ip_address=request.client.host if request.client else None,
-        user_agent=request.headers.get("user-agent"),
-    ))
+    db.add(
+        AuditLog(
+            user_id=user.id,
+            action="user.register",
+            resource_type="user",
+            resource_id=str(user.id),
+            ip_address=request.client.host if request.client else None,
+            user_agent=request.headers.get("user-agent"),
+        )
+    )
 
     await db.flush()
     await db.refresh(user)
@@ -147,24 +149,28 @@ async def issue_token(
         extra={"jti": jti, "username": user.username},
     )
 
-    db.add(UserSession(
-        user_id=user.id,
-        token_jti=jti,
-        user_agent=request.headers.get("user-agent"),
-        ip_address=request.client.host if request.client else None,
-        expires_at=datetime.now(UTC) + timedelta(minutes=expire_minutes),
-    ))
+    db.add(
+        UserSession(
+            user_id=user.id,
+            token_jti=jti,
+            user_agent=request.headers.get("user-agent"),
+            ip_address=request.client.host if request.client else None,
+            expires_at=datetime.now(UTC) + timedelta(minutes=expire_minutes),
+        )
+    )
 
     user.last_login_at = datetime.now(UTC)
 
-    db.add(AuditLog(
-        user_id=user.id,
-        action="user.login",
-        resource_type="user",
-        resource_id=str(user.id),
-        ip_address=request.client.host if request.client else None,
-        user_agent=request.headers.get("user-agent"),
-    ))
+    db.add(
+        AuditLog(
+            user_id=user.id,
+            action="user.login",
+            resource_type="user",
+            resource_id=str(user.id),
+            ip_address=request.client.host if request.client else None,
+            user_agent=request.headers.get("user-agent"),
+        )
+    )
 
     await db.flush()
     return TokenResponse(access_token=token, expires_in=expire_minutes * 60)
