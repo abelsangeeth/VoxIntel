@@ -19,8 +19,12 @@ logger = structlog.get_logger(__name__)
 async def lifespan(app: FastAPI):
     logger.info("startup", env=settings.ENV)
     # Create tables if they don't exist (migrations handle prod)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("database connected")
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("database unavailable at startup", error=str(exc))
     yield
     logger.info("shutdown")
     await engine.dispose()
