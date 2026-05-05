@@ -5,8 +5,8 @@ Revises: 002_users_and_teams
 Create Date: 2026-05-06
 """
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 revision = "003_user_integrations"
