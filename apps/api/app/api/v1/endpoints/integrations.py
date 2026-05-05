@@ -257,7 +257,7 @@ async def zoom_webhook(
     if payload.get("event") == "endpoint.url_validation":
         plain = payload["payload"]["plainToken"]
         signature = hmac.new(
-            settings.ZOOM_CLIENT_SECRET.encode(),
+            settings.ZOOM_WEBHOOK_SECRET_TOKEN.encode(),
             plain.encode(),
             hashlib.sha256,
         ).hexdigest()

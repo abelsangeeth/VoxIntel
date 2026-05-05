@@ -77,6 +77,7 @@ class Settings(BaseSettings):
     # ── Integrations ──────────────────────────────────────────────────────
     ZOOM_CLIENT_ID: str = ""
     ZOOM_CLIENT_SECRET: str = ""
+    ZOOM_WEBHOOK_SECRET_TOKEN: str = ""
     SLACK_BOT_TOKEN: str = ""
     SLACK_SIGNING_SECRET: str = ""
     SLACK_SUMMARY_CHANNEL: str = "#voxintel-summaries"
