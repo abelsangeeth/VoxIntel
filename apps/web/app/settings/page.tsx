@@ -151,7 +151,10 @@ export default function SettingsPage() {
                     {saving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
                   </button>
                 </div>
-                         {/* ── Integrations ── */}
+              </div>
+            )}
+
+            {/* ── Integrations ── */}
             {activeSection === 'integrations' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
