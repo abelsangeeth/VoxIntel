@@ -36,7 +36,7 @@ export default function SettingsPage() {
   async function connectZoom(e: React.MouseEvent) {
     e.preventDefault();
     try {
-      const data = await apiFetch('/v1/integrations/zoom/connect');
+      const data = await apiFetch('/v1/integrations/zoom/connect') as { url: string };
       if (data.url) {
         window.location.href = data.url;
       }
