@@ -69,6 +69,23 @@ async def create_session(
     return ConversationRead.model_validate(conversation)
 
 
+# ── List sessions ──────────────────────────────────────────────────────────────
+
+
+@router.get("", response_model=list[ConversationRead])
+async def list_sessions(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[ConversationRead]:
+    """List all sessions for the current user."""
+    result = await db.execute(
+        select(Conversation)
+        .where(Conversation.owner_id == current_user.id)
+        .order_by(Conversation.created_at.desc())
+    )
+    return [ConversationRead.model_validate(c) for c in result.scalars()]
+
+
 # ── Get session ────────────────────────────────────────────────────────────────
 
 
