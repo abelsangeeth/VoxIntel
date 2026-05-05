@@ -364,7 +364,9 @@ class UserIntegration(Base):
     scope: Mapped[str | None] = mapped_column(Text, nullable=True)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     provider_user_id: Mapped[str | None] = mapped_column(String(255), nullable=True)  # Zoom user ID
-    provider_email: Mapped[str | None] = mapped_column(String(255), nullable=True)  # Zoom account email
+    provider_email: Mapped[str | None] = mapped_column(
+        String(255), nullable=True
+    )  # Zoom account email
     meta: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utcnow

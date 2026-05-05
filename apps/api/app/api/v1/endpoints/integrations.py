@@ -184,7 +184,9 @@ async def zoom_callback(
 # ── Zoom: Status ───────────────────────────────────────────────────────────────
 
 
-@router.get("/zoom/status", response_model=IntegrationStatus, summary="Check Zoom connection status")
+@router.get(
+    "/zoom/status", response_model=IntegrationStatus, summary="Check Zoom connection status"
+)
 async def zoom_status(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
