@@ -27,14 +27,18 @@ export default function Dashboard() {
   const [creating, setCreating] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [newTitle, setNewTitle] = useState('');
+  const [createError, setCreateError] = useState('');
 
   async function handleCreate() {
     if (!newTitle.trim()) return;
     setCreating(true);
+    setCreateError('');
     try {
       await createSession({ title: newTitle, source: 'manual' });
       setNewTitle(''); setShowNew(false);
       mutate();
+    } catch (e: unknown) {
+      setCreateError(e instanceof Error ? e.message : 'Failed to create session');
     } finally { setCreating(false); }
   }
 
@@ -75,9 +79,10 @@ export default function Dashboard() {
               autoFocus
             />
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <button className="btn-secondary" onClick={() => setShowNew(false)}>Cancel</button>
+              <button className="btn-secondary" onClick={() => { setShowNew(false); setCreateError(''); }}>Cancel</button>
               <button className="btn-primary" onClick={handleCreate} disabled={creating}>{creating ? 'Creating…' : 'Create'}</button>
             </div>
+            {createError && <div style={{ color: '#EF4444', fontSize: 13, marginTop: 10, textAlign: 'right' }}>{createError}</div>}
           </div>
         </div>
       )}
