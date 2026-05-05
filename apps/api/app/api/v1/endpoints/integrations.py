@@ -85,14 +85,23 @@ async def zoom_connect(
 @router.get("/zoom/callback", summary="Zoom OAuth callback — stores user tokens")
 async def zoom_callback(
     code: str = Query(...),
-    state: str = Query(...),
+    state: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
 ) -> RedirectResponse:
     """
     Zoom redirects here after the user approves.
     Exchanges the authorization code for access + refresh tokens and
     stores them against the user identified by 'state'.
+    If state is missing (e.g. Zoom's 'Add app now' dev button), redirect back
+    to VoxIntel settings with an error asking the user to use the Connect button.
     """
+    if not state:
+        # This happens when Zoom's developer portal "Add app now" is clicked
+        # instead of the proper Connect Zoom button in VoxIntel settings.
+        return RedirectResponse(
+            url=f"{FRONTEND_URL}/settings?zoom=error&msg=Please+use+the+Connect+Zoom+button+in+VoxIntel+settings+instead"
+        )
+
     # Extract user_id from state
     try:
         user_id_str, _ = state.split(":", 1)
