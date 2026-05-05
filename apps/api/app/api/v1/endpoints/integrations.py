@@ -56,9 +56,9 @@ class IntegrationStatus(BaseModel):
 @router.get("/zoom/connect", summary="Start Zoom OAuth flow for current user")
 async def zoom_connect(
     current_user: User = Depends(get_current_user),
-) -> RedirectResponse:
+) -> dict:
     """
-    Generates a Zoom OAuth authorization URL and redirects the user to Zoom.
+    Generates a Zoom OAuth authorization URL for the user.
     Embeds the user's ID in the 'state' parameter so we know who to link on callback.
     """
     if not settings.ZOOM_CLIENT_ID:
@@ -76,7 +76,7 @@ async def zoom_connect(
         f"&redirect_uri={redirect_uri}"
         f"&state={state}"
     )
-    return RedirectResponse(url=f"{ZOOM_AUTH_URL}?{params}")
+    return {"url": f"{ZOOM_AUTH_URL}?{params}"}
 
 
 # ── Zoom OAuth: Callback ───────────────────────────────────────────────────────

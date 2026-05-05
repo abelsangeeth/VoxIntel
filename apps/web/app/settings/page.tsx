@@ -33,6 +33,18 @@ export default function SettingsPage() {
     refetchZoom();
   }
 
+  async function connectZoom(e: React.MouseEvent) {
+    e.preventDefault();
+    try {
+      const data = await apiFetch('/v1/integrations/zoom/connect');
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error('Failed to get Zoom OAuth URL', err);
+    }
+  }
+
   function copyToClipboard(text: string, key: string) {
     navigator.clipboard.writeText(text);
     setCopied(key);
@@ -201,13 +213,13 @@ export default function SettingsPage() {
                           Connect your Zoom account so VoxIntel can automatically capture your meetings, generate transcripts, and create AI summaries — without any manual steps.
                         </div>
                         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                          <a
-                            href={zoomConnectUrl}
+                          <button
+                            onClick={connectZoom}
                             className="btn-primary"
                             style={{ display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}
                           >
                             <span>📹</span> Connect Zoom Account
-                          </a>
+                          </button>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>You'll be redirected to Zoom to authorize</span>
                         </div>
                         <div style={{ fontSize: 12, color: 'var(--text-muted)', padding: '10px 12px', background: 'var(--surface-2)', borderRadius: 6, lineHeight: 1.6 }}>
