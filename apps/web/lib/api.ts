@@ -48,7 +48,7 @@ export async function apiFetch<T>(
 }
 
 // ── SWR fetcher (used by useSWR hooks) ────────────────────────────────────────
-export const swrFetcher = (url: string) => apiFetch(url);
+export const swrFetcher = (url: string) => apiFetch<any>(url);
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 export interface TokenResponse {
