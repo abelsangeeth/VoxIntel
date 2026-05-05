@@ -10,7 +10,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 revision = "003_user_integrations"
-down_revision = "002_users_and_teams"
+down_revision = "002"
 branch_labels = None
 depends_on = None
 
