@@ -1,6 +1,7 @@
 """Application settings — loaded from environment variables / .env file."""
 
 from functools import lru_cache
+from typing import Any
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -12,12 +13,26 @@ class Settings(BaseSettings):
     # ── App ───────────────────────────────────────────────────────────────
     ENV: str = "development"
     LOG_LEVEL: str = "INFO"
+    # Comma-separated origins — override via CORS_ORIGINS env var in Railway/Vercel.
+    # e.g. CORS_ORIGINS="https://my-app.vercel.app,https://custom.domain.com"
     CORS_ORIGINS: list[str] = [
         "http://localhost:3000",
         "http://localhost:3001",
+        "http://localhost:3002",
         "http://localhost:8000",
         "https://voxintel-production.up.railway.app",
+        # Vercel production + all preview deployments
+        "https://vox-intel.vercel.app",
+        "https://vox-intel-git-main-abelsangeeth.vercel.app",
     ]
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v: Any) -> list[str]:
+        """Allow CORS_ORIGINS to be set as a comma-separated string in env."""
+        if isinstance(v, str):
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
 
     # ── Database ──────────────────────────────────────────────────────────
     DATABASE_URL: str = "postgresql+asyncpg://voxintel:voxintel@localhost:5432/voxintel"
