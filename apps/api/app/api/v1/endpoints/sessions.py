@@ -78,17 +78,12 @@ async def list_sessions(
     current_user: User = Depends(get_current_user),
 ) -> list[ConversationRead]:
     """List all sessions for the current user."""
-    try:
-        result = await db.execute(
-            select(Conversation)
-            .where(Conversation.owner_id == current_user.id)
-            .order_by(Conversation.created_at.desc())
-        )
-        return [ConversationRead.model_validate(c) for c in result.scalars()]
-    except Exception as e:
-        import traceback
-        from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=500, content={"error": str(e), "trace": traceback.format_exc()})
+    result = await db.execute(
+        select(Conversation)
+        .where(Conversation.owner_id == current_user.id)
+        .order_by(Conversation.created_at.desc())
+    )
+    return [ConversationRead.model_validate(c) for c in result.scalars()]
 
 
 # ── Get session ────────────────────────────────────────────────────────────────
