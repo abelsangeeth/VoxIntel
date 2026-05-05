@@ -68,6 +68,9 @@ class User(Base):
     audit_logs: Mapped[list["AuditLog"]] = relationship(
         "AuditLog", back_populates="user", cascade="all, delete-orphan"
     )
+    integrations: Mapped[list["UserIntegration"]] = relationship(
+        "UserIntegration", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class UserSession(Base):
@@ -337,6 +340,40 @@ class SessionSummary(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utcnow
     )
+
+
+# ── User Integrations (per-user OAuth tokens) ────────────────────────────────
+
+
+class UserIntegration(Base):
+    """Stores OAuth tokens for a user's connected external services."""
+
+    __tablename__ = "user_integrations"
+    __table_args__ = (
+        UniqueConstraint("user_id", "provider", name="uq_user_integrations_user_provider"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    provider: Mapped[str] = mapped_column(String(50), nullable=False)  # "zoom", "slack", etc.
+    access_token: Mapped[str] = mapped_column(Text, nullable=False)
+    refresh_token: Mapped[str | None] = mapped_column(Text, nullable=True)
+    token_type: Mapped[str] = mapped_column(String(50), nullable=False, default="Bearer")
+    scope: Mapped[str | None] = mapped_column(Text, nullable=True)
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    provider_user_id: Mapped[str | None] = mapped_column(String(255), nullable=True)  # Zoom user ID
+    provider_email: Mapped[str | None] = mapped_column(String(255), nullable=True)  # Zoom account email
+    meta: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow
+    )
+
+    user: Mapped["User"] = relationship("User", back_populates="integrations")
 
 
 # ── Audit Log ─────────────────────────────────────────────────────────────────

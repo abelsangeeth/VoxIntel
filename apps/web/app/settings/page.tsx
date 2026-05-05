@@ -20,8 +20,18 @@ export default function SettingsPage() {
   const [displayName, setDisplayName] = useState(user?.display_name || user?.username || '');
   const [copied, setCopied] = useState<string | null>(null);
 
-  const zoomWebhook = `${API_BASE}/v1/integrations/zoom/webhook`;
+  const zoomConnectUrl = `${API_BASE}/v1/integrations/zoom/connect`;
   const slackWebhook = `${API_BASE}/v1/integrations/slack/webhook`;
+
+  // Live Zoom connection status for current user
+  const { data: zoomStatus, mutate: refetchZoom } = useSWR<{
+    provider: string; connected: boolean; provider_email?: string; connected_at?: string;
+  }>('/v1/integrations/zoom/status', swrFetcher);
+
+  async function disconnectZoom() {
+    await apiFetch('/v1/integrations/zoom/disconnect', { method: 'DELETE' });
+    refetchZoom();
+  }
 
   function copyToClipboard(text: string, key: string) {
     navigator.clipboard.writeText(text);
@@ -141,10 +151,7 @@ export default function SettingsPage() {
                     {saving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
                   </button>
                 </div>
-              </div>
-            )}
-
-            {/* ── Integrations ── */}
+                         {/* ── Integrations ── */}
             {activeSection === 'integrations' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
@@ -155,31 +162,56 @@ export default function SettingsPage() {
                       <span style={{ fontSize: 22 }}>📹</span>
                       <div>
                         <div style={{ fontWeight: 600 }}>Zoom</div>
-                        <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Auto-capture meetings when they start and end via Zoom webhooks</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Automatically capture your Zoom meetings in VoxIntel</div>
                       </div>
                     </div>
+                    {/* Live status badge */}
+                    {zoomStatus?.connected ? (
+                      <span className="badge badge-green">● Connected</span>
+                    ) : (
+                      <span className="badge" style={{ background: 'var(--surface-2)', color: 'var(--text-muted)' }}>Not connected</span>
+                    )}
                   </div>
                   <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    <div>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Setup Steps</div>
-                      <ol style={{ fontSize: 13, color: 'var(--text-secondary)', paddingLeft: 18, lineHeight: 1.8, margin: 0 }}>
-                        <li>Go to <a href="https://marketplace.zoom.us" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }}>marketplace.zoom.us</a> → Create a Webhook Only App</li>
-                        <li>Under <strong>Feature → Event Subscriptions</strong>, add events: <code>meeting.started</code> and <code>meeting.ended</code></li>
-                        <li>Set the <strong>Event Notification Endpoint URL</strong> to the webhook URL below</li>
-                        <li>Copy the <strong>Secret Token</strong> from Zoom and add it to your Railway env as <code>ZOOM_CLIENT_SECRET</code></li>
-                      </ol>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Your Webhook URL</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <code style={{ flex: 1, background: 'var(--surface-2)', borderRadius: 6, padding: '9px 12px', fontSize: 12.5, wordBreak: 'break-all', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
-                          {zoomWebhook}
-                        </code>
-                        <button className="btn-secondary" style={{ whiteSpace: 'nowrap', fontSize: 12 }} onClick={() => copyToClipboard(zoomWebhook, 'zoom')}>
-                          {copied === 'zoom' ? '✓ Copied' : '⎘ Copy'}
+                    {zoomStatus?.connected ? (
+                      <>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: 'var(--surface-2)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                          <span style={{ fontSize: 20 }}>✅</span>
+                          <div>
+                            <div style={{ fontWeight: 600, fontSize: 13.5 }}>Connected as {zoomStatus.provider_email}</div>
+                            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                              Your Zoom meetings will automatically appear in VoxIntel when they start.
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          className="btn-secondary"
+                          onClick={disconnectZoom}
+                          style={{ color: '#EF4444', borderColor: '#FECACA', alignSelf: 'flex-start' }}
+                        >
+                          Disconnect Zoom
                         </button>
-                      </div>
-                    </div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+                          Connect your Zoom account so VoxIntel can automatically capture your meetings, generate transcripts, and create AI summaries — without any manual steps.
+                        </div>
+                        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                          <a
+                            href={zoomConnectUrl}
+                            className="btn-primary"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}
+                          >
+                            <span>📹</span> Connect Zoom Account
+                          </a>
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>You'll be redirected to Zoom to authorize</span>
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', padding: '10px 12px', background: 'var(--surface-2)', borderRadius: 6, lineHeight: 1.6 }}>
+                          <strong>Note:</strong> Make sure your Zoom App type is set to <strong>OAuth</strong> (not Webhook Only) in the <a href="https://marketplace.zoom.us" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }}>Zoom Marketplace</a>.
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -195,18 +227,11 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    <div>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Setup Steps</div>
-                      <ol style={{ fontSize: 13, color: 'var(--text-secondary)', paddingLeft: 18, lineHeight: 1.8, margin: 0 }}>
-                        <li>Go to <a href="https://api.slack.com/apps" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }}>api.slack.com/apps</a> → Create New App</li>
-                        <li>Enable <strong>Event Subscriptions</strong> and enter the URL below</li>
-                        <li>Add bot scopes: <code>chat:write</code>, <code>channels:read</code></li>
-                        <li>Install the app to your workspace and copy the <strong>Bot Token</strong></li>
-                        <li>Add to Railway env: <code>SLACK_BOT_TOKEN</code> and <code>SLACK_SIGNING_SECRET</code></li>
-                      </ol>
+                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+                      Set up Slack to receive automatic meeting summaries after each session ends.
                     </div>
                     <div>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Your Webhook URL</div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Slack Webhook URL</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <code style={{ flex: 1, background: 'var(--surface-2)', borderRadius: 6, padding: '9px 12px', fontSize: 12.5, wordBreak: 'break-all', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
                           {slackWebhook}
@@ -216,8 +241,13 @@ export default function SettingsPage() {
                         </button>
                       </div>
                     </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                      Add <code>SLACK_BOT_TOKEN</code> and <code>SLACK_SIGNING_SECRET</code> to your environment to enable Slack posting.
+                    </div>
                   </div>
                 </div>
+              </div>
+            )}          </div>
               </div>
             )}
 
