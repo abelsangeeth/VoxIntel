@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     API_BASE_URL: str = "https://voxintel-production.up.railway.app"
     # Comma-separated origins — override via CORS_ORIGINS env var in Railway/Vercel.
     # e.g. CORS_ORIGINS="https://my-app.vercel.app,https://custom.domain.com"
-    CORS_ORIGINS: list[str] = [
+    CORS_ORIGINS: list[str] | str = [
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:3002",
