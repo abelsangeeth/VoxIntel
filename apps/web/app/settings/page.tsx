@@ -80,12 +80,12 @@ export default function SettingsPage() {
                         {user?.username?.slice(0, 1).toUpperCase()}
                       </div>
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: 15 }}>{user?.username}</div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Demo Account</div>
+                        <div style={{ fontWeight: 600, fontSize: 15 }}>{user?.display_name || user?.username}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Member'}</div>
                       </div>
                     </div>
                     <div style={{ display: 'grid', gap: 14 }}>
-                      {[['Display Name', user?.username], ['Email', 'demo@voxintel.ai'], ['Role', 'Administrator']].map(([label, val]) => (
+                      {[['Display Name', user?.display_name || user?.username], ['Email', user?.email], ['Role', user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Member']].map(([label, val]) => (
                         <div key={label}>
                           <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</label>
                           <input defaultValue={val ?? ''} style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }} />
