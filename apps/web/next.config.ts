@@ -1,11 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    turbo: {
-      root: __dirname,
-    },
-  },
+  // Turbopack options now sit at the top level in modern Next.js
 };
 
 export default nextConfig;
